@@ -17,6 +17,12 @@ import {
   NEW_GAME_SOURCE_FILES,
   NEW_GAME_SOURCE_HASHES,
 } from "./new-game-assets.mjs";
+import {
+  APPROVED_STORE_ASSETS,
+  GAMEPLAY_BANNER_SOURCE,
+  GAMEPLAY_BANNER_SOURCE_HASH,
+  assertApprovedStoreAssets,
+} from "./assets.mjs";
 
 const pluginName = "com.ulanzi.tictactoe.ulanziPlugin";
 const pluginRoot = new URL(`../${pluginName}/`, import.meta.url);
@@ -35,6 +41,9 @@ const {
   imageFileForCell,
 } = require("../src/plugin/image-renderer.js");
 const stateFiles = STATE_RUNTIME_FILES;
+const projectRootPath = fileURLToPath(projectRoot).replaceAll("\\", "/").replace(/\/$/, "");
+
+assertApprovedStoreAssets(projectRootPath);
 
 for (const field of ["Author", "Name", "Description", "Detail", "Icon", "Version", "CodePath", "Type", "UUID", "Actions"]) {
   if (!manifest[field]) throw new Error(`manifest.json is missing ${field}`);
@@ -52,6 +61,13 @@ if (packageMetadata.repository?.url !== "https://github.com/arkamax404-max/TicTa
 if (!existsSync(new URL("LICENSE", projectRoot))) throw new Error("Root MIT license is missing");
 if (!readFileSync(new URL("LICENSE", projectRoot)).equals(readFileSync(new URL("LICENSE", pluginRoot))))
   throw new Error("Runnable package must contain the root MIT license unchanged");
+const gameplaySource = readFileSync(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, projectRoot));
+if (createHash("sha256").update(gameplaySource).digest("hex") !== GAMEPLAY_BANNER_SOURCE_HASH)
+  throw new Error(`Authoritative gameplay screenshot changed: assets/${GAMEPLAY_BANNER_SOURCE}`);
+if (pngDimensions(fileURLToPath(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, projectRoot))).join("x") !== "460x281")
+  throw new Error(`assets/${GAMEPLAY_BANNER_SOURCE} must be 460x281`);
+if (existsSync(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, pluginRoot)))
+  throw new Error("Gameplay banner source must not be in the runnable package");
 if (manifest.Software?.MinVersion !== "2.1.4" || "MinimumVersion" in (manifest.Software || {}))
   throw new Error("Manifest must declare Software.MinVersion");
 if (!Array.isArray(manifest.Actions) || manifest.Actions.length !== 11)
@@ -222,9 +238,27 @@ if ((inspectorHtml.match(/<option\b/g) || []).length !== 2)
   throw new Error("New Game Property Inspector must expose exactly two choices");
 const cover = pngDimensions(fileURLToPath(new URL(store.cover, projectRoot)));
 if (cover[0] / cover[1] !== 2) throw new Error("Store cover must use a 2:1 ratio");
+const expectedStorePaths = Object.keys(APPROVED_STORE_ASSETS);
+const declaredStorePaths = [store.cover, ...store.screenshots];
+if (JSON.stringify(declaredStorePaths) !== JSON.stringify(expectedStorePaths))
+  throw new Error("Store gallery must declare the approved cover and both gameplay banners in order");
+for (const path of declaredStorePaths) {
+  if (!/^resources\/store\/[a-z0-9-]+\.png$/.test(path))
+    throw new Error(`Unsafe store artwork path: ${path}`);
+}
 for (const screenshot of store.screenshots) {
   const [width, height] = pngDimensions(fileURLToPath(new URL(screenshot, projectRoot)));
   if (width / height !== 1.5) throw new Error(`${screenshot} must use a 3:2 ratio`);
+}
+const expectedPackageBanners = ["assets/banner-1.png", "assets/banner-2.png"];
+if (JSON.stringify(manifest.Banner) !== JSON.stringify(expectedPackageBanners))
+  throw new Error("Manifest must declare both approved promotional banners");
+for (const [index, packagePath] of expectedPackageBanners.entries()) {
+  if (!/^assets\/banner-[12]\.png$/.test(packagePath))
+    throw new Error(`Unsafe package banner path: ${packagePath}`);
+  const storePath = store.screenshots[index];
+  if (!readFileSync(new URL(packagePath, pluginRoot)).equals(readFileSync(new URL(storePath, projectRoot))))
+    throw new Error(`${packagePath} must match ${storePath}`);
 }
 
 function javascriptFiles(directory) {

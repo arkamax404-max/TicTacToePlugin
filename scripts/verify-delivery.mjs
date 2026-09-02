@@ -22,6 +22,16 @@ function collect(directory, root = directory) {
   return files;
 }
 
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1)
+      crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
 function readStoredZip(path) {
   const archive = readFileSync(path);
   const files = new Map();
@@ -29,13 +39,18 @@ function readStoredZip(path) {
   while (archive.readUInt32LE(offset) === 0x04034b50) {
     const compression = archive.readUInt16LE(offset + 8);
     if (compression !== 0) throw new Error("Delivery verifier expects deterministic stored ZIP entries");
+    const expectedCrc = archive.readUInt32LE(offset + 14);
     const size = archive.readUInt32LE(offset + 18);
     const nameLength = archive.readUInt16LE(offset + 26);
     const extraLength = archive.readUInt16LE(offset + 28);
     const nameStart = offset + 30;
     const name = archive.toString("utf8", nameStart, nameStart + nameLength);
     const dataStart = nameStart + nameLength + extraLength;
-    files.set(name, archive.subarray(dataStart, dataStart + size));
+    const data = archive.subarray(dataStart, dataStart + size);
+    if (data.length !== size || crc32(data) !== expectedCrc)
+      throw new Error(`ZIP CRC mismatch: ${name}`);
+    if (files.has(name)) throw new Error(`ZIP contains duplicate entry: ${name}`);
+    files.set(name, data);
     offset = dataStart + size;
   }
   return files;
@@ -70,6 +85,7 @@ console.log(JSON.stringify({
   files: workspace.size,
   packageBytes: readFileSync(zipPath).length,
   packageSha256: hash,
+  crcVerified: true,
   recursivePackageContent: false,
   workspaceZipIdentity: true,
   workspaceInstallIdentity: Boolean(installPath),
