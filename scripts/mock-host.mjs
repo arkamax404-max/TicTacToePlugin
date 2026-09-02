@@ -17,6 +17,7 @@ const runtimeFiles = {
   newGame: "new-game-runtime.png",
   victory: "victory-runtime.png",
   defeat: "defeat-runtime.png",
+  draw: "draw-runtime.png",
 };
 const expectedImages = Object.fromEntries(Object.entries(runtimeFiles).map(([name, filename]) => [
   name,
@@ -160,9 +161,10 @@ try {
 }
 if (childError) throw new Error(childError);
 
-function runOutcomeScenario({ humanMark, board, currentPlayer, expectedOutcome, machineMoves }) {
+function runOutcomeScenario({ humanMark, board, currentPlayer, expectedOutcome, machineMoves, interrupt = false, cellIndex = 2 }) {
   const broadcasts = [];
   const timers = [];
+  const cancelled = [];
   const game = new TicTacToeGame({ humanMark, random: () => 0 });
   game.board = [...board];
   game.currentPlayer = currentPlayer;
@@ -175,27 +177,38 @@ function runOutcomeScenario({ humanMark, board, currentPlayer, expectedOutcome, 
       timers.push({ callback, delay });
       return timers.length - 1;
     },
-    cancel: () => {},
+    cancel: (timer) => cancelled.push(timer),
   });
-  const cell = `${pluginUuid}.cell-3___cell-3___mock-cell-3`;
+  const position = cellIndex + 1;
+  const cell = `${pluginUuid}.cell-${position}___cell-${position}___mock-cell-${position}`;
   const starts = [1, 2].map((index) =>
     `${pluginUuid}.new-game___new-game-${index}___mock-new-game-${index}`,
   );
-  controller.onAdd({ context: cell, uuid: `${pluginUuid}.cell-3` });
+  controller.onAdd({ context: cell, uuid: `${pluginUuid}.cell-${position}` });
   for (const context of starts)
     controller.onAdd({ context, uuid: `${pluginUuid}.new-game` });
   broadcasts.length = 0;
 
   if (machineMoves) timers[0].callback();
   else controller.onRun({ context: cell });
-  const outcomeTimer = timers.find((timer) => timer.delay === 2_000);
+  const outcomeTimer = timers.find((timer) => timer.delay === 5_000);
   assert.ok(outcomeTimer);
   const outcomeBroadcasts = broadcasts.filter((item) => starts.includes(item.context));
   assert.deepEqual(outcomeBroadcasts.map((item) => item.data), [
     expectedImages[expectedOutcome],
     expectedImages[expectedOutcome],
   ]);
-  outcomeTimer.callback();
+  if (interrupt) {
+    controller.onRun({ context: starts[0] });
+    assert.equal(cancelled.includes(timers.indexOf(outcomeTimer)), true);
+    assert.equal(game.snapshot().status, "playing");
+    assert.deepEqual(game.snapshot().board, Array(9).fill(null));
+    const countAfterInterrupt = broadcasts.length;
+    outcomeTimer.callback();
+    assert.equal(broadcasts.length, countAfterInterrupt);
+  } else {
+    outcomeTimer.callback();
+  }
   const restored = broadcasts.filter((item) => starts.includes(item.context)).slice(-2);
   assert.deepEqual(restored.map((item) => item.data), [expectedImages.newGame, expectedImages.newGame]);
   return {
@@ -204,6 +217,7 @@ function runOutcomeScenario({ humanMark, board, currentPlayer, expectedOutcome, 
     temporaryBroadcasts: outcomeBroadcasts.length,
     visibilityMs: outcomeTimer.delay,
     restoreBroadcasts: restored.length,
+    interrupted: interrupt,
   };
 }
 
@@ -221,6 +235,22 @@ const outcomeScenarios = [
     currentPlayer: "X",
     expectedOutcome: "defeat",
     machineMoves: true,
+  }),
+  runOutcomeScenario({
+    humanMark: "X",
+    board: ["X", "O", "X", "X", "O", "O", "O", "X", null],
+    currentPlayer: "X",
+    expectedOutcome: "draw",
+    machineMoves: false,
+    cellIndex: 8,
+  }),
+  runOutcomeScenario({
+    humanMark: "X",
+    board: ["X", "X", null, "O", "O", null, null, null, null],
+    currentPlayer: "X",
+    expectedOutcome: "victory",
+    machineMoves: false,
+    interrupt: true,
   }),
 ];
 console.log(JSON.stringify({ outcomeScenarios }, null, 2));

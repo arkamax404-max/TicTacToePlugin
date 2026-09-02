@@ -12,7 +12,7 @@ const PLUGIN_UUID = "com.ulanzi.ulanzistudio.tictactoe";
 const NEW_GAME_ACTION = `${PLUGIN_UUID}.new-game`;
 const SCORE_ACTION = `${PLUGIN_UUID}.score`;
 const MACHINE_DELAY_MS = 350;
-const OUTCOME_DISPLAY_MS = 2_000;
+const OUTCOME_DISPLAY_MS = 5_000;
 
 function actionFor(actionId) {
   const cell = actionId?.match(
@@ -78,13 +78,14 @@ function createController(
 
   function broadcastAfterMove() {
     const state = game.snapshot();
-    if (state.status === "playing" || state.status === "draw") {
-      if (state.status === "draw") cancelOutcome();
+    if (state.status === "playing") {
       broadcast();
       return;
     }
     cancelOutcome();
-    newGameDisplay = state.winner === state.humanMark ? "victory" : "defeat";
+    newGameDisplay = state.status === "draw"
+      ? "draw"
+      : state.winner === state.humanMark ? "victory" : "defeat";
     broadcast();
     const generation = outcomeGeneration;
     outcomeTimer = schedule(() => {

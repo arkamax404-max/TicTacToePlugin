@@ -133,6 +133,7 @@ test("maps every New Game display to its optimized supplied PNG", () => {
     default: "new-game-runtime.png",
     victory: "victory-runtime.png",
     defeat: "defeat-runtime.png",
+    draw: "draw-runtime.png",
   });
   for (const [display, filename] of Object.entries(NEW_GAME_IMAGE_FILES)) {
     const derivative = readFileSync(join(pluginAssets, filename));
@@ -167,6 +168,7 @@ test("preserves the user-supplied source artwork outside the runnable package", 
     "new-game-source.png": "46b70a1ea44c5345fda1ffe87e0b616e6852a537354bade63bdb35c7138859b3",
     "victory-source.png": "e0eed7d9e693c867127b61109ef607bad482ef7644af0569d7beeef31811d59c",
     "defeat-source.png": "5d7bfba13d86167566c0533337fb59dd5c50323bffb08b958fad5d68ce03f1fe",
+    "draw-source.png": "86fc56a275168a98fde6ccaf51f2edce24bd2aa5b79a798e8f889462a24ea17f",
   };
   for (const [filename, hash] of Object.entries(expected)) {
     const source = readFileSync(join(sourceRoot, filename));
@@ -248,7 +250,7 @@ test("frames short messages and all runtime PNG states with short or 16-bit leng
     assert.equal(payload.length < 65_535, true);
     assert.equal(JSON.parse(payload).cmd, "state");
   }
-  for (const display of ["default", "victory", "defeat"]) {
+  for (const display of ["default", "victory", "defeat", "draw"]) {
     host.setBaseDataIcon(`${PLUGIN_UUID}.new-game___new-game___instance-new-game`, createNewGameImage(display));
     const frame = frames.at(-1);
     assert.equal(frame[1] & 0x7f, 126);
@@ -368,6 +370,7 @@ function outcomeHarness({ humanMark = "X", board, currentPlayer = humanMark } = 
   const images = [];
   const timers = [];
   const cancelled = [];
+  let now = 0;
   const host = {
     decodeContext: (context) => ({ uuid: context.split("___")[0] }),
     setBaseDataIcon: (context, data) => images.push({ context, data }),
@@ -378,10 +381,13 @@ function outcomeHarness({ humanMark = "X", board, currentPlayer = humanMark } = 
   const controller = createController(host, {
     game,
     schedule: (callback, delay) => {
-      timers.push({ callback, delay });
+      timers.push({ callback, delay, due: now + delay, cancelled: false, fired: false });
       return timers.length - 1;
     },
-    cancel: (timer) => cancelled.push(timer),
+    cancel: (timer) => {
+      timers[timer].cancelled = true;
+      cancelled.push(timer);
+    },
   });
   const cell = `${PLUGIN_UUID}.cell-3___cell-3___instance-cell-3`;
   const starts = [1, 2].map((index) =>
@@ -391,14 +397,23 @@ function outcomeHarness({ humanMark = "X", board, currentPlayer = humanMark } = 
   for (const context of starts)
     controller.onAdd({ context, uuid: `${PLUGIN_UUID}.new-game` });
   images.length = 0;
-  return { cancelled, cell, controller, game, images, starts, timers };
+  function advanceBy(milliseconds) {
+    now += milliseconds;
+    for (const timer of timers) {
+      if (!timer.cancelled && !timer.fired && timer.due <= now) {
+        timer.fired = true;
+        timer.callback();
+      }
+    }
+  }
+  return { advanceBy, cancelled, cell, controller, game, images, starts, timers };
 }
 
 function imagesForContexts(images, contexts) {
   return images.filter((item) => contexts.includes(item.context)).map((item) => item.data);
 }
 
-test("shows human victory on every New Game context for exactly 2,000 ms", () => {
+test("shows human victory on every New Game context for exactly 5,000 ms", () => {
   const harness = outcomeHarness({
     board: ["X", "X", null, "O", "O", null, null, null, null],
   });
@@ -411,9 +426,14 @@ test("shows human victory on every New Game context for exactly 2,000 ms", () =>
   );
   assert.equal(harness.timers.length, 1);
   assert.equal(harness.timers[0].delay, OUTCOME_DISPLAY_MS);
-  assert.equal(OUTCOME_DISPLAY_MS, 2_000);
+  assert.equal(OUTCOME_DISPLAY_MS, 5_000);
 
-  harness.timers[0].callback();
+  harness.advanceBy(4_999);
+  assert.deepEqual(
+    imagesForContexts(harness.images, harness.starts).slice(-2),
+    [createNewGameImage("victory"), createNewGameImage("victory")],
+  );
+  harness.advanceBy(1);
   assert.deepEqual(
     imagesForContexts(harness.images, harness.starts).slice(-2),
     [createNewGameImage(), createNewGameImage()],
@@ -451,7 +471,7 @@ test("maps human O victory to Victory and machine X victory to Defeat", () => {
   assert.equal(machineWin.timers[1].delay, OUTCOME_DISPLAY_MS);
 });
 
-test("draw keeps the default New Game image without an outcome timer", () => {
+test("shows Draw on every New Game context for exactly 5,000 ms", () => {
   const harness = outcomeHarness({
     board: ["X", "O", "X", "X", "O", "O", "O", "X", null],
   });
@@ -463,9 +483,21 @@ test("draw keeps the default New Game image without an outcome timer", () => {
   assert.equal(harness.game.snapshot().score.draws, 1);
   assert.deepEqual(
     imagesForContexts(harness.images, harness.starts),
+    [createNewGameImage("draw"), createNewGameImage("draw")],
+  );
+  assert.equal(harness.timers.length, 1);
+  assert.equal(harness.timers[0].delay, OUTCOME_DISPLAY_MS);
+  harness.advanceBy(4_999);
+  assert.deepEqual(
+    imagesForContexts(harness.images, harness.starts).slice(-2),
+    [createNewGameImage("draw"), createNewGameImage("draw")],
+  );
+  harness.advanceBy(1);
+  assert.deepEqual(
+    imagesForContexts(harness.images, harness.starts).slice(-2),
     [createNewGameImage(), createNewGameImage()],
   );
-  assert.equal(harness.timers.length, 0);
+  assert.equal(harness.game.snapshot().status, "draw");
 });
 
 test("New Game, settings, and clear cancel stale outcome restorations", async (t) => {
@@ -489,6 +521,8 @@ test("New Game, settings, and clear cancel stale outcome restorations", async (t
 
   await t.test("New Game", () => verifyCancellation((harness) => {
     harness.controller.onRun({ context: harness.starts[0] });
+    assert.equal(harness.game.snapshot().status, "playing");
+    assert.deepEqual(harness.game.snapshot().board, Array(9).fill(null));
   }));
   await t.test("settings", () => verifyCancellation((harness) => {
     harness.controller.onParam({

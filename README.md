@@ -18,7 +18,7 @@ Place the cell actions in row-major order:
 
 The nine placement icons retain the position number and miniature grid to make setup unambiguous. Once configured, every cell switches among deterministic 196×196 runtime derivatives of the source artwork in `assets/blank.png`, `assets/cross.png`, and `assets/circle.png`. The build keeps the original artwork unchanged and packages only the optimized derivatives.
 
-The **New Game** action normally shows the supplied New Game artwork. A human win or loss temporarily replaces it with the supplied Victory or Defeat artwork for exactly two seconds, then restores New Game. Draws keep New Game visible. These images are also deterministic 196×196 derivatives; their workspace source files remain unchanged and are excluded from the runnable plugin and ZIP.
+The **New Game** action normally shows the supplied New Game artwork. A human win, machine win, or draw temporarily replaces it with the supplied Victory, Defeat, or Draw artwork for exactly five seconds, then restores New Game without starting a round. Pressing **New Game** during that interval immediately starts a fresh round and safely cancels the pending restoration. These images are deterministic 196×196 derivatives; their workspace source files remain unchanged and are excluded from the runnable plugin and ZIP.
 
 ## Install the release package
 

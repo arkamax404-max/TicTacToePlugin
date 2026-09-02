@@ -216,6 +216,7 @@ for (const asset of [
   "assets/new-game-runtime.png",
   "assets/victory-runtime.png",
   "assets/defeat-runtime.png",
+  "assets/draw-runtime.png",
   "assets/score.png",
 ]) {
   const dimensions = pngDimensions(fileURLToPath(new URL(asset, pluginRoot)));

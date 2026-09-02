@@ -10,6 +10,7 @@ const NEW_GAME_IMAGE_FILES = Object.freeze({
   default: "new-game-runtime.png",
   victory: "victory-runtime.png",
   defeat: "defeat-runtime.png",
+  draw: "draw-runtime.png",
 });
 const pngImageCache = new Map();
 
