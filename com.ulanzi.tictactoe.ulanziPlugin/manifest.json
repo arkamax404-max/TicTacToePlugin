@@ -1,0 +1,30 @@
+{
+  "Author": "Santiago Pérez",
+  "Name": "Tic-Tac-Toe",
+  "Description": "Play tic-tac-toe against a medium-strength machine on Ulanzi D200 keys.",
+  "Detail": "Place the nine fixed cell actions in a 3 by 3 D200 layout, then add New Game and Session Score. Choose X or O in the New Game Property Inspector. X always starts, completed boards remain visible with the supplied cell artwork, and the process-local score tracks X wins, O wins, and draws. No network connection is required.",
+  "Icon": "assets/plugin.png",
+  "Version": "1.3.0",
+  "Category": "Games",
+  "CategoryIcon": "assets/plugin.png",
+  "Banner": ["assets/banner-1.png"],
+  "CodePath": "dist/main.js",
+  "Type": "JavaScript",
+  "PrivateAPI": false,
+  "UUID": "com.ulanzi.ulanzistudio.tictactoe",
+  "Actions": [
+    { "Name": "Cell 1", "Icon": "assets/cell-1.png", "state": 0, "States": [{ "Name": "Board Cell 1", "Image": "assets/cell-1.png" }], "Tooltip": "Play the top-left cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-1", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 2", "Icon": "assets/cell-2.png", "state": 0, "States": [{ "Name": "Board Cell 2", "Image": "assets/cell-2.png" }], "Tooltip": "Play the top-center cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-2", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 3", "Icon": "assets/cell-3.png", "state": 0, "States": [{ "Name": "Board Cell 3", "Image": "assets/cell-3.png" }], "Tooltip": "Play the top-right cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-3", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 4", "Icon": "assets/cell-4.png", "state": 0, "States": [{ "Name": "Board Cell 4", "Image": "assets/cell-4.png" }], "Tooltip": "Play the middle-left cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-4", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 5", "Icon": "assets/cell-5.png", "state": 0, "States": [{ "Name": "Board Cell 5", "Image": "assets/cell-5.png" }], "Tooltip": "Play the center cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-5", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 6", "Icon": "assets/cell-6.png", "state": 0, "States": [{ "Name": "Board Cell 6", "Image": "assets/cell-6.png" }], "Tooltip": "Play the middle-right cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-6", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 7", "Icon": "assets/cell-7.png", "state": 0, "States": [{ "Name": "Board Cell 7", "Image": "assets/cell-7.png" }], "Tooltip": "Play the bottom-left cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-7", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 8", "Icon": "assets/cell-8.png", "state": 0, "States": [{ "Name": "Board Cell 8", "Image": "assets/cell-8.png" }], "Tooltip": "Play the bottom-center cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-8", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Cell 9", "Icon": "assets/cell-9.png", "state": 0, "States": [{ "Name": "Board Cell 9", "Image": "assets/cell-9.png" }], "Tooltip": "Play the bottom-right cell", "UUID": "com.ulanzi.ulanzistudio.tictactoe.cell-9", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "New Game", "Icon": "assets/new-game-runtime.png", "PropertyInspectorPath": "property-inspector/new-game/inspector.html", "state": 0, "States": [{ "Name": "Start New Game", "Image": "assets/new-game-runtime.png" }], "Tooltip": "Start a new game or choose X or O", "UUID": "com.ulanzi.ulanzistudio.tictactoe.new-game", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
+    { "Name": "Session Score", "Icon": "assets/score.png", "state": 0, "States": [{ "Name": "Session Score", "Image": "assets/score.png" }], "Tooltip": "Show X wins, O wins, and draws", "UUID": "com.ulanzi.ulanzistudio.tictactoe.score", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] }
+  ],
+  "OS": [{ "Platform": "windows", "MinimumVersion": "10" }],
+  "Software": { "MinVersion": "2.1.4" }
+}

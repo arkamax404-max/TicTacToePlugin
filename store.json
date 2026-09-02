@@ -1,0 +1,9 @@
+{
+  "cover": "resources/store/cover.png",
+  "screenshots": [
+    "resources/store/banner-gameplay.png"
+  ],
+  "longDescription": "Turn eleven Ulanzi D200 keys into a shared tic-tac-toe game. Arrange the nine position-guided cell actions in a 3 by 3 grid, choose X or O from the New Game Property Inspector, keep the final board visible, show Victory or Defeat on New Game for two seconds, and track X wins, O wins, and draws for the current plugin session. No account or network connection is required.",
+  "deviceTypes": ["deck"],
+  "tags": ["Games", "Tic-tac-toe", "D200"]
+}

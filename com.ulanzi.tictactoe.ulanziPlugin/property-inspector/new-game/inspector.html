@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>New game settings</title>
+    <link rel="stylesheet" href="inspector.css" />
+  </head>
+  <body>
+    <main>
+      <h1>New game</h1>
+      <form id="settings">
+        <label>
+          Your symbol
+          <select name="playerMark">
+            <option value="X">X / crosses</option>
+            <option value="O">O / circles</option>
+          </select>
+        </label>
+        <p>X always starts. If you choose O, the machine makes the first move.</p>
+        <output id="status" role="status">Connecting…</output>
+      </form>
+    </main>
+    <script src="../lib/host-api.js"></script>
+    <script src="inspector.js"></script>
+  </body>
+</html>
