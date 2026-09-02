@@ -21,6 +21,7 @@ import {
   APPROVED_STORE_ASSETS,
   GAMEPLAY_BANNER_SOURCE,
   GAMEPLAY_BANNER_SOURCE_HASH,
+  STORE_ASSET_SOURCES,
   assertApprovedStoreAssets,
 } from "./assets.mjs";
 
@@ -64,10 +65,23 @@ if (!readFileSync(new URL("LICENSE", projectRoot)).equals(readFileSync(new URL("
 const gameplaySource = readFileSync(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, projectRoot));
 if (createHash("sha256").update(gameplaySource).digest("hex") !== GAMEPLAY_BANNER_SOURCE_HASH)
   throw new Error(`Authoritative gameplay screenshot changed: assets/${GAMEPLAY_BANNER_SOURCE}`);
-if (pngDimensions(fileURLToPath(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, projectRoot))).join("x") !== "460x281")
-  throw new Error(`assets/${GAMEPLAY_BANNER_SOURCE} must be 460x281`);
+if (pngDimensions(fileURLToPath(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, projectRoot))).join("x") !== "1536x1024")
+  throw new Error(`assets/${GAMEPLAY_BANNER_SOURCE} must be 1536x1024`);
 if (existsSync(new URL(`assets/${GAMEPLAY_BANNER_SOURCE}`, pluginRoot)))
   throw new Error("Gameplay banner source must not be in the runnable package");
+for (const [relativePath, expected] of Object.entries(STORE_ASSET_SOURCES)) {
+  const sourcePath = new URL(relativePath, projectRoot);
+  if (!existsSync(sourcePath)) throw new Error(`Store asset source is missing: ${relativePath}`);
+  const source = readFileSync(sourcePath);
+  if (createHash("sha256").update(source).digest("hex") !== expected.sha256)
+    throw new Error(`Authoritative store source changed: ${relativePath}`);
+  if (pngDimensions(fileURLToPath(sourcePath)).join("x") !== `${expected.width}x${expected.height}`)
+    throw new Error(`${relativePath} must be ${expected.width}x${expected.height}`);
+  if (expected.width * expected.outputHeight !== expected.height * expected.outputWidth)
+    throw new Error(`${relativePath} does not match its output aspect ratio`);
+  if (existsSync(new URL(relativePath, pluginRoot)))
+    throw new Error(`Store asset source must not be in the runnable package: ${relativePath}`);
+}
 if (manifest.Software?.MinVersion !== "2.1.4" || "MinimumVersion" in (manifest.Software || {}))
   throw new Error("Manifest must declare Software.MinVersion");
 if (!Array.isArray(manifest.Actions) || manifest.Actions.length !== 11)
