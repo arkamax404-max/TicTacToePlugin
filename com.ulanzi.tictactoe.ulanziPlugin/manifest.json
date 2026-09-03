@@ -4,7 +4,7 @@
   "Description": "Play tic-tac-toe against a medium-strength machine on Ulanzi D200 keys.",
   "Detail": "Place the nine fixed cell actions in a 3 by 3 D200 layout, then add New Game and Session Score. Choose X or O in the New Game Property Inspector. X always starts, completed boards remain visible with the supplied cell artwork, and New Game shows Victory, Defeat, or Draw for five seconds after each outcome. The process-local score tracks X wins, O wins, and draws. No network connection is required.",
   "Icon": "assets/plugin.png",
-  "Version": "1.4.0",
+  "Version": "1.5.0",
   "Category": "Games",
   "CategoryIcon": "assets/plugin.png",
   "Banner": ["assets/banner-1.png", "assets/banner-2.png"],
@@ -25,6 +25,9 @@
     { "Name": "New Game", "Icon": "assets/new-game-runtime.png", "PropertyInspectorPath": "property-inspector/new-game/inspector.html", "state": 0, "States": [{ "Name": "Start New Game", "Image": "assets/new-game-runtime.png" }], "Tooltip": "Start a new game or choose X or O", "UUID": "com.ulanzi.ulanzistudio.tictactoe.new-game", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] },
     { "Name": "Session Score", "Icon": "assets/score.png", "state": 0, "States": [{ "Name": "Session Score", "Image": "assets/score.png" }], "Tooltip": "Show X wins, O wins, and draws", "UUID": "com.ulanzi.ulanzistudio.tictactoe.score", "SupportedInMultiActions": false, "DisableAutomaticStates": true, "Controllers": ["Keypad"], "Devices": ["D200"] }
   ],
-  "OS": [{ "Platform": "windows", "MinimumVersion": "10" }],
+  "OS": [
+    { "Platform": "windows", "MinimumVersion": "10" },
+    { "Platform": "mac", "MinimumVersion": "14" }
+  ],
   "Software": { "MinVersion": "2.1.4" }
 }

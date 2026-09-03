@@ -2,6 +2,8 @@
 
 Play a complete game of tic-tac-toe on a Ulanzi D200. The plugin uses **11 button actions**: nine fixed board cells, one **New Game** button, and one **Session Score** button. Choose **X** or **O** and play against the machine.
 
+Current release: **v1.5.0**.
+
 ## Key layout
 
 Place the cell actions in row-major order:
@@ -23,13 +25,17 @@ The **New Game** action normally shows the supplied New Game artwork. A human wi
 ## Install the release package
 
 1. Download `com.ulanzi.tictactoe.ulanziPlugin.zip` from the GitHub release assets and extract it.
-2. Install the contained `com.ulanzi.tictactoe.ulanziPlugin` folder using Ulanzi Studio's local plugin selection, or copy that folder to `%APPDATA%\Ulanzi\UlanziDeck\Plugins\` using the locally verified installation method.
+2. In Ulanzi Studio, use the local plugin selection to install the extracted `com.ulanzi.tictactoe.ulanziPlugin` folder. This extract-first method is the primary installation path on both Windows and macOS.
 3. Place **Cell 1** through **Cell 9** as shown above, then add **New Game** and **Session Score** wherever convenient.
 4. Select the **New Game** action, open its Property Inspector, and choose **X / crosses** or **O / circles**.
 
 The release ZIP is a transport archive. Extract it first; direct ZIP import has not been established by the local installation test.
 
-The package targets the Ulanzi D200 keypad on Windows 10 or newer and requires Ulanzi Studio 2.1.4 or newer. It does not support other devices unless their host exposes the same D200 action contract.
+**Optional Windows-only alternative:** copy the extracted plugin folder to `%APPDATA%\Ulanzi\UlanziDeck\Plugins\` using the locally verified Windows installation method. No macOS filesystem path is documented because one has not been verified.
+
+## Compatibility
+
+The package supports the Ulanzi D200 keypad on **Windows 10 or newer** and **macOS 14 Sonoma or newer**, with Ulanzi Studio 2.1.4 or newer. The plugin has been physically validated with a D200 on Windows 10+ and with a D200 connected to a MacBook Pro running macOS Sonoma. Older macOS versions are not claimed as supported. Other devices are unsupported unless their host exposes the same D200 action contract.
 
 ## Store gallery
 
@@ -65,7 +71,7 @@ The game is process-local: all registered Tic-Tac-Toe actions connected to one p
 
 ## Hardware limitation
 
-The host protocol and package conventions mirror the verified Flight Info template. Automated tests cover game rules, AI selection, rendering, and context broadcasting, but final brightness, crop, and timing should still be verified on a physical D200 before marketplace submission.
+The host protocol and package conventions mirror the verified Flight Info template. Automated tests cover game rules, AI selection, rendering, and context broadcasting. The plugin has also been physically validated on a D200 with Windows 10+ and macOS 14 Sonoma.
 
 ## Artwork provenance and license
 

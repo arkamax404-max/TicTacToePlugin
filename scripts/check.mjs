@@ -84,6 +84,18 @@ for (const [relativePath, expected] of Object.entries(STORE_ASSET_SOURCES)) {
 }
 if (manifest.Software?.MinVersion !== "2.1.4" || "MinimumVersion" in (manifest.Software || {}))
   throw new Error("Manifest must declare Software.MinVersion");
+const expectedOperatingSystems = [
+  { Platform: "windows", MinimumVersion: "10" },
+  { Platform: "mac", MinimumVersion: "14" },
+];
+if (!Array.isArray(manifest.OS)) throw new Error("Manifest OS must be an array");
+if (manifest.OS.some((entry) => entry?.Platform === "macos"))
+  throw new Error('Manifest OS must use the supported "mac" token, not "macos"');
+const declaredPlatforms = manifest.OS.map((entry) => entry?.Platform);
+if (new Set(declaredPlatforms).size !== declaredPlatforms.length)
+  throw new Error("Manifest OS must not contain duplicate platforms");
+if (JSON.stringify(manifest.OS) !== JSON.stringify(expectedOperatingSystems))
+  throw new Error('Manifest OS must declare exactly windows 10 and mac 14, in that order');
 if (!Array.isArray(manifest.Actions) || manifest.Actions.length !== 11)
   throw new Error("Plugin must expose exactly eleven actions");
 
@@ -299,4 +311,4 @@ for (const filename of readdirSync(fileURLToPath(new URL("src/plugin/", projectR
   const distribution = readFileSync(new URL(`dist/${filename}`, pluginRoot));
   if (!source.equals(distribution)) throw new Error(`Source/dist runtime drift: ${filename}`);
 }
-console.log(`Validated ${manifest.UUID}: preserved source PNGs, deterministic ${RUNTIME_STATE_DIMENSION}px runtime derivatives, sub-65,535-byte state JSON, source/dist identity, 11 D200 actions, unchanged placement setup, and JavaScript syntax.`);
+console.log(`Validated ${manifest.UUID}: exact Windows 10/macOS 14 metadata, preserved source PNGs, deterministic ${RUNTIME_STATE_DIMENSION}px runtime derivatives, sub-65,535-byte state JSON, source/dist identity, 11 D200 actions, unchanged placement setup, and JavaScript syntax.`);
